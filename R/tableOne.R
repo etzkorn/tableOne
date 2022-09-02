@@ -1,6 +1,11 @@
 #' Build Table One
 #'
-#' @return a tibble with summary statistics
+#' @param data a data frame to summarize
+#' @param strata.variable a single character naming the column in the data frame which contains a character/factor of the strata
+#' @param pretty.labels a named character vector where the names correspond to all
+#'    column names of data except for the strata variable. Values correspond to the
+#'    cleaned version of the variable names to be displayed in the summary table.
+#' @return a tibble with summary statistics (mean/sd or n/%)
 #' @export
 #'
 #' @examples
@@ -13,7 +18,7 @@
 #'         Sepal.Width = "Sepal Width (cm)",
 #'         Petal.Length = "Petal Length (cm)"),
 #'         Petal.Width = "Petal Width (cm)"))
-#'
+
 tableOne <- function(data, strata.variable, pretty.labels){
 	strata <- data[[strata.variable]]
 

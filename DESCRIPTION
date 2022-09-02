@@ -2,10 +2,9 @@ Package: tableOne
 Type: Package
 Title: What the Package Does (Title Case)
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Author: Lacey Etzkorn, PhD
+Maintainer: Lacey Etzkorn <letzkor1@jh.edu>
+Description: Creates a table one which compares all characterisitcs in a data frame between multiple strata.
+License: LGPL
 Encoding: UTF-8
 LazyData: true
