@@ -1,6 +1,6 @@
-#' Title
+#' Build Table One
 #'
-#' @return
+#' @return a tibble with summary statistics
 #' @export
 #'
 #' @examples
@@ -13,6 +13,7 @@
 #'         Sepal.Width = "Sepal Width (cm)",
 #'         Petal.Length = "Petal Length (cm)"),
 #'         Petal.Width = "Petal Width (cm)"))
+#'
 tableOne <- function(data, strata.variable, pretty.labels){
 	strata <- data[[strata.variable]]
 
@@ -95,75 +96,3 @@ tableOne <- function(data, strata.variable, pretty.labels){
 	colnames(tab1) <- gsub("_"," ", colnames(tab1))
 	return(tab1)
 }
-
-#
-# df <- read.csv("~/OneDrive - Johns Hopkins/SPRING_Accelerometry_Analysis_Etzkorn/Data/SPRING_PA_20220817.csv")
-# df <- dplyr::select(df, study, n_days:mean_active_bout)
-# df$study2 <- df$study
-# strata.variable <- "study2"
-# data <- df
-#
-# pretty.labels <-
-# 	c(
-# 		study = "Study",
-# 		n_days = "Recorded Days (n)",
-# 		n_valid_days ="Valid Recorded Days (n)",
-# 		wear_time_on_valid_days = "Daily Wear Time (m)",
-# 		tac="TAC (counts)",
-# 		tlac="TLAC (log counts)",
-# 		ltac="LTAC (log counts)",
-# 		astp="ASTP",
-# 		satp="SATP",
-# 		time_spent_active="Daily Active Time (m)",
-# 		time_spent_nonactive="Daily Inactive Time (m)",
-# 		no_of_active_bouts="Daily Active Bouts (n)",
-# 		no_of_nonactive_bouts="Daily Inactive Bouts (n)",
-# 		mean_active_bout="Duration Active Bouts (m)"
-# 	)
-#
-#
-# 	tab1 <- tab1[sapply(tab.order, function(x) which(grepl(x, tab1$key))),]
-# 	tab1$key <- tab.names
-
-# # Format Table 1
-# gt(tab1, rowname_col = "key") %>%
-# tab_header(title = md("**Table 1:** Patient Characteristics by Shunt Status (n = 169)"))%>%
-# cols_label(
-# 		mean = html("Mean"),
-# 		missing = html("Missing (n)")
-# 	)%>%
-# cols_align(align = "right",columns = c(2)
-# 	)
-#
-#
-#
-# # Format Table 1
-# bind_cols(tab1, select(tab2,-key)) %>%
-# mutate(missing = ifelse(missing==0,"",missing)) %>%
-# gt(rowname_col = "key") %>%
-# 	tab_header(title = md("**Table 1:** Patient Characteristics by Diagnosis of Normal Pressure Hydrocephalus (n = 224)"))%>%
-# 	cols_label(
-# 		iqr2 = html("(sd)"),
-# 		iqr = html("(sd)"),
-# 		Shunt = html("NPH (n=71)"),
-# 		`No Shunt` = html("No NPH (n=153)"),
-# 		missing = html("Missing (n)"),
-# 		mean = html("Mean")
-# 	)%>%
-# 	cols_align(align = "right",columns = c(2, 5,7)
-# 	)%>%
-# 	cols_align(align = "center",columns = c(4,9)
-# 	) %>%
-# tab_style(
-# 	style = list(
-# 		cell_borders(sides = "right")
-# 	),
-# 	locations = list(
-# 		cells_body(
-# 			columns = vars(missing)
-# 		)
-# 	)
-# ) %>%
-# tab_footnote(footnote = "P-Values were generated using a Wilcoxon test for continuous variables and a chi-square test for binary variables.",
-# 	cells_column_labels(9)
-# )
