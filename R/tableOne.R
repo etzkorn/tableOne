@@ -10,6 +10,8 @@
 #'
 #' @examples
 #' data(iris)
+#' data <- iris
+#' data$species2 <-  data$Species
 #' tableOne(
 #'     iris,
 #'     strata = "Species",
@@ -24,7 +26,7 @@ tableOne <- function(data, strata.variable, pretty.labels){
 
 	new.data <-
 	lapply(
-		select(data,-matches(strata.variable)),
+		select(data,-matches(strata.variable, ignore.case = F)),
 		function(variable){
 			if(is.character(variable)){
 				variable <- factor(variable)
@@ -44,6 +46,7 @@ tableOne <- function(data, strata.variable, pretty.labels){
 	new.data <- do.call(new.data, what = "cbind") %>% as_tibble()
 	new.data$strata.variable <- strata
 
+	# Create TAble of summary measures
 	tab1 <-
 	new.data %>%
 	pivot_longer(!strata.variable,names_to = "key", values_to = "value") %>%
@@ -70,6 +73,34 @@ tableOne <- function(data, strata.variable, pretty.labels){
 	mutate(missing = rowSums(across(ends_with("Missing")))) %>%
 	select(-ends_with("_Missing"))
 
+	# Get correct ordering
+	tab1$order<-
+	sapply(
+		tab1$key,
+		function(name){
+			if(name %in% names(pretty.labels)){
+				which(name == names(pretty.labels))
+			}else{
+				NA
+			}
+	})
+
+	# Get order for variables split by factor levels
+	if(any(is.na(tab1$order))){
+		tab1$order[is.na(tab1$order)]<-
+		sapply(
+			tab1$key[is.na(tab1$order)],
+			function(name){
+				if(any(sapply(names(pretty.labels), grepl, x=name))){
+					which(sapply(names(pretty.labels), grepl, x=name))
+				}
+		})
+	}
+
+	tab1$order<- rank(tab1$order,ties.method = "first")
+	tab1 <- arrange(tab1, order) %>% select(-order)
+
+	# Re-Label With Pretty Names
 	tab1$key<-
 	sapply(
 		tab1$key,
@@ -99,5 +130,6 @@ tableOne <- function(data, strata.variable, pretty.labels){
 	})
 
 	colnames(tab1) <- gsub("_"," ", colnames(tab1))
+	colnames(tab1)[1] <- ""
 	return(tab1)
 }
