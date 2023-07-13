@@ -26,6 +26,12 @@
 tableOne <- function(data, strata.variable, pretty.labels, includeMarginal=T){
 	strata <- data[[strata.variable]]
 
+	# model.matrix needs to retain NAs, so we reset this option
+	current.na.action <- options('na.action')
+	options(na.action='na.pass')
+
+	# Convert Characters to Factors,
+	# Factors to dummy variables
 	new.data <-
 		lapply(
 			select(data,-matches(strata.variable, ignore.case = F)),
@@ -43,10 +49,12 @@ tableOne <- function(data, strata.variable, pretty.labels, includeMarginal=T){
 					return(variable)
 				}
 			})
-	#names(new.data)[sapply(new.data, is_tibble)]<- ""
 
 	new.data <- do.call(new.data, what = "cbind") %>% as_tibble()
 	new.data$strata.variable <- strata
+
+	# reset na.action
+	options(na.action=current.na.action)
 
 	# Create Table of summary measures
 	tab1 <-
