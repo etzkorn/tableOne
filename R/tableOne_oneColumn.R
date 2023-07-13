@@ -1,7 +1,6 @@
 #' Build Table One
 #'
 #' @param data a data frame to summarize
-#' @param strata.variable a single character naming the column in the data frame which contains a character/factor of the strata
 #' @param pretty.labels a named character vector where the names correspond to all
 #'    column names of data except for the strata variable. Values correspond to the
 #'    cleaned version of the variable names to be displayed in the summary table.
@@ -12,23 +11,26 @@
 #' library(tableOne)
 #' data(iris)
 #' data <- iris
-#' data$species2 <-  data$Species
 #' tableOne(
 #'     iris,
-#'     strata = "Species",
 #'     pretty.labels = c(
+#'         Species = "Species",
 #'         Sepal.Length = "Sepal Length (cm)",
 #'         Sepal.Width = "Sepal Width (cm)",
 #'         Petal.Length = "Petal Length (cm)"),
 #'         Petal.Width = "Petal Width (cm)"))
 
 
-tableOne <- function(data, strata.variable, pretty.labels, includeMarginal=T){
-	strata <- data[[strata.variable]]
+tableOne_oneColumn <- function(data, pretty.labels){
 
+	# model.matrix needs to retain nas, so we reset this option
+	current.na.action <- options('na.action')
+	options(na.action='na.pass')
+	# Convert Characters to Factors,
+	# Factors to dummy variables
 	new.data <-
 		lapply(
-			select(data,-matches(strata.variable, ignore.case = F)),
+			data,
 			function(variable){
 				if(is.character(variable)){
 					variable <- factor(variable)
@@ -42,20 +44,19 @@ tableOne <- function(data, strata.variable, pretty.labels, includeMarginal=T){
 				}else{
 					return(variable)
 				}
-			})
-	#names(new.data)[sapply(new.data, is_tibble)]<- ""
+			})%>%
+		do.call(what = "cbind") %>% as_tibble()
 
-	new.data <- do.call(new.data, what = "cbind") %>% as_tibble()
-	new.data$strata.variable <- strata
+	# reset na.action
+	options(na.action=current.na.action)
 
 	# Create Table of summary measures
 	tab1 <-
 		new.data %>%
-		pivot_longer(
-			!strata.variable,
-			names_to = "key",
-			values_to = "value") %>%
-		group_by(strata.variable,key) %>%
+		pivot_longer(cols = everything(),
+					 names_to = "key",
+					 values_to = "value") %>%
+		group_by(key) %>%
 		summarise(
 			Mean = mean(value, na.rm = T),
 			sd = sd(value,  na.rm = T),
@@ -65,21 +66,16 @@ tableOne <- function(data, strata.variable, pretty.labels, includeMarginal=T){
 		mutate(
 			`(sd)` = ifelse(
 				bin.var,
-				paste0("(", 100*roundN(Mean), ")"),
-				paste0("(", roundN(sd), ")")
+				paste0("(", 100*round(Mean,3), ")"),
+				paste0("(", round(sd,1), ")")
 			),
-			Mean =
-				ifelse(
-					bin.var,
-					paste0(n),
-					roundN(Mean)
-					)
-		)%>%
-		select(strata.variable, key, Mean, `(sd)`, Missing) %>%
+			Mean = as.character(ifelse(
+				bin.var, n, round(Mean,1)
+			)))%>%
+		select(key, Mean, `(sd)`, Missing) %>%
 		pivot_longer(Mean:Missing) %>%
-		pivot_wider(names_from =c(strata.variable, name), values_from = value) %>%
+		pivot_wider(names_from =c(name), values_from = value) %>%
 		mutate_at(vars(ends_with("Missing")), as.numeric) %>%
-		mutate(missing = rowSums(across(ends_with("Missing")))) %>%
 		select(-ends_with("_Missing"))
 
 	# Get correct ordering
@@ -142,23 +138,8 @@ tableOne <- function(data, strata.variable, pretty.labels, includeMarginal=T){
 	colnames(tab1) <- gsub("_"," ", colnames(tab1))
 	colnames(tab1)[1] <- ""
 
-	strata.table <- table(strata)
-	strata.names <- colnames(tab1)[grepl("Mean",colnames(tab1))]
-	strata.order <- sapply(names(strata.table), function(lab) grep(lab, strata.names))
-	strata.table <- strata.table[strata.order]
-	strata.names <- gsub(" Mean", "",strata.names)
+	colnames(tab1)[grepl("Mean",colnames(tab1))] <-
+		paste0("Overall (n = ",nrow(new.data),") Mean")
 
-	strata.names <- paste0(strata.names, " (n = ",strata.table,") Mean")
-
-	colnames(tab1)[grepl("Mean",colnames(tab1))] <- strata.names
-
-	if(includeMarginal){
-		data2 <- data
-		data2[strata.variable] <- NULL
-		tab2 <- tableOne_oneColumn(data2,pretty.labels)
-		tab1 <- cbind(tab1, tab2[,2:3])
-		colnames(tab1) <- gsub("Var.*","",colnames(tab1))
-	}
 	return(tab1)
 }
-
