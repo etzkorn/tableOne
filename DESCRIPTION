@@ -1,7 +1,7 @@
 Package: tableOne
 Type: Package
 Title: Generates a Simple Table One with Stratification by 2 groups.
-Version: 0.1.0
+Version: 0.1.1
 Author: Lacey Etzkorn, PhD
 Maintainer: Lacey Etzkorn <letzkor1@jh.edu>
 Description: Creates a table one which compares all characterisitcs in a data frame between two strata.

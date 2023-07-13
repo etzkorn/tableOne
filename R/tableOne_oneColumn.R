@@ -23,9 +23,10 @@
 
 tableOne_oneColumn <- function(data, pretty.labels){
 
-	# model.matrix needs to retain nas, so we reset this option
+	# model.matrix needs to retain NAs, so we reset this option
 	current.na.action <- options('na.action')
 	options(na.action='na.pass')
+
 	# Convert Characters to Factors,
 	# Factors to dummy variables
 	new.data <-
@@ -78,7 +79,7 @@ tableOne_oneColumn <- function(data, pretty.labels){
 		mutate_at(vars(ends_with("Missing")), as.numeric) %>%
 		select(-ends_with("_Missing"))
 
-	# Get correct ordering
+	# Extract ordering from pretty.labels input
 	tab1$order<-
 		sapply(
 			tab1$key,
@@ -102,6 +103,7 @@ tableOne_oneColumn <- function(data, pretty.labels){
 				})
 	}
 
+	# Perform Re-Ordering
 	tab1$order<- rank(tab1$order,ties.method = "first")
 	tab1 <- arrange(tab1, order) %>% select(-order)
 
